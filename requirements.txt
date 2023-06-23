@@ -1,0 +1,4 @@
+python-dotenv
+pydantic==1.10.7
+web3==6.2.0
+motor==3.1.2
