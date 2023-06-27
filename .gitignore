@@ -4,3 +4,4 @@ bin
 lib
 .Python
 pyvenv.cfg
+/src/.env

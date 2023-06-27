@@ -62,7 +62,7 @@ def load_text(params: List[str], file_path: str='', func: str='', lang: str='') 
     rel_path_list = file_path_list[file_path_list.index('staking_deposit') + 1:]
     json_path = resource_path(os.path.join(INTL_CONTENT_PATH, lang, *rel_path_list))
     parts = json_path.split("src")
-    parts_2 = parts[1].split("staking_deposit")
+    parts_2 = parts[0].split("staking_deposit")
     new_path = parts[0] + "src" + "/staking_deposit" + parts_2[1]
     try:
         # browse json until text is found
