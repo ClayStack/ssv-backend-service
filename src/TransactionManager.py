@@ -8,7 +8,7 @@ from src.utils.async_utils import force_async
 from utils import fetch
 
 API = 'https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=7XA3GMX2WBVPZA9NSVRHP87J2BV2I2SHM2'
-
+# todo deprecate full util
 
 async def getGasPrices():
     result = await fetch.get(API)

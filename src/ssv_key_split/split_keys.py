@@ -7,6 +7,8 @@ import platform
 
 from typing import List
 
+# todo clean, if this is not our code add reference where you got it from otherwise clean totally
+# todo a lot of prints, but what is this for, either meaning logs etc
 # output = check_output(["./ssv-cli", "key-shares", "-ks",
 #                        "/home/rohit/Documents/hackathon-bogota/ssv-service/validator_keys/keystore-m_12381_3600_1_0_0-1665236798.json",
 #                        "-ps", "test", "-oid", "1,2,9,42", "-ok",
@@ -45,8 +47,8 @@ class OperatorData:
             operator = Operator(operator_data["id"], operator_data["public_key"], operator_data["fee"],
                                 operator_data["name"])
             operators_data.append(operator)
-        # print("operator_data")
-        # print(operator_data)
+        # print("operator_data") # todo clean
+        # print(operator_data) # todo clean
         return operators_data
 
 
@@ -68,6 +70,7 @@ class SSV:
         """
         :return:
         """
+        # todo clean
         print("===================================================================================")
         operator_ids = [str(operator.id) for operator in operator_data]
         operator_pubkeys = [operator.pubkey for operator in operator_data]
@@ -75,21 +78,21 @@ class SSV:
         output_folder = os.getcwd() + ("/keyshares" if 'Linux' in platform.system() else '\\keyshares')
         cli_path = self.CLI_PATH_LINUX_MAC if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN
         # output2=check_output(["ls","-la"])
-        # print(output2)
+        # print(output2) # todo clean
         output = check_output(
             [cli_path, "key-shares", "-ks", self.keystore_file, "-ps", self.keystore_pass, "-oid",
              ",".join(operator_ids), "-ok", ",".join(operator_pubkeys), "-ssv", str(total_ssv_fee), "-of",
              output_folder])
-        print(output)
+        print(output)# todo logger
         return output_folder + output.decode("utf-8").partition("keyshares")[2].partition(".json")[0] + ".json"
 
     def stake_shares(self, share_file_path):
         """
         :return:
         """
-        print(share_file_path)
+        print(share_file_path)# todo logger
         with open(share_file_path, "r") as file_path:
-            print(file_path)
+            print(file_path)# todo logger
             shares = json.load(file_path)
         file_path.close()
         return shares["payload"]["readable"]

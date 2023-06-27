@@ -3,6 +3,7 @@ import aiohttp
 timeout = aiohttp.ClientTimeout(total=60 * 10)
 
 
+# todo remove if unsued
 async def post(url, json=None):
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.post(url=url, json=json) as response:

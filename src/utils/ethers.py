@@ -49,6 +49,7 @@ class Provider:
             logger.info(f"RPC: {self.rpc} disconnected, next provider")
             return self.selectNextProvider()
 
+# todo check all pieces are used otherwise remove unsued pieces
 
 def getContract(network, contractName, provider: Provider):
     address = CONTRACTS[network][contractName]

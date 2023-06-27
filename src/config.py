@@ -33,6 +33,7 @@ def getABI(contractName):
 
 
 # API
+# todo clean unsued ones
 HTTP_PORT = os.getenv('HTTP_PORT', 5001)
 API_KEY = os.getenv('API_KEY', '123')
 SKIP_STARTUP = os.getenv('SKIP_STARTUP', 'False')
@@ -44,6 +45,7 @@ MNEMONIC_PASSWORD = os.getenv('MNEMONIC_PASSWORD', '')
 OPERATOR_IDS = os.getenv('OPERATOR_IDS', '').split(',')  # Assume there are many operator IDs in hand
 
 # RPC URLs
+# todo remove all and read single item from env. You can still leave as array to avoid changing the util code
 RPC_URLS = {
     "mainnet": [
         'https://mainnet.infura.io/v3/6292442a776d4d2ca339570c510876c5',
@@ -60,6 +62,7 @@ RPC_URLS = {
     ]
 }
 
+# todo same, read address from env
 CONTRACTS = {
     "mainnet": {
     },
