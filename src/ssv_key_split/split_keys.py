@@ -64,7 +64,7 @@ class SSV:
         operator_ids = [str(operator.id) for operator in operator_data]
         operator_pubkeys = [operator.pubkey for operator in operator_data]
         total_ssv_fee = (sum([int(operator.fee) for operator in operator_data]) + network_fees) * 2628000
-        output_folder = os.getcwd() + ("/keyshares" if 'Linux' in platform.system() else '\\keyshares')
+        output_folder = os.getcwd() + ("/keyshares" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\keyshares')
         cli_path = self.CLI_PATH_LINUX_MAC if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN
         # output2=check_output(["ls","-la"])
         # print(output2) # todo clean
@@ -88,7 +88,7 @@ class SSV:
 
 
 def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee=0):
-    path = os.getcwd() + ("/validator_keys/" if 'Linux' in platform.system() else '\\validator_keys\\')
+    path = os.getcwd() + ("/validator_keys/" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\validator_keys\\')
     file_path = path + keystore_file
     ssv = SSV(
         file_path,
