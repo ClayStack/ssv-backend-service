@@ -103,7 +103,6 @@ def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee
 
 def get_shares_from_file(shares_file):
     with open(shares_file, "r") as file_path:
-        print(file_path)
         shares = json.load(file_path)
     file_path.close()
     return shares['payload']
