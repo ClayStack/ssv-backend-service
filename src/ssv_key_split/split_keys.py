@@ -1,5 +1,6 @@
 import json
-from subprocess import check_output
+import re
+import subprocess
 import requests
 from collections import namedtuple
 import os
@@ -42,8 +43,8 @@ class OperatorData:
 
 
 class SSV:
-    CLI_PATH_LINUX_MAC = os.getcwd() + "/ssv/ssv-cli"
-    CLI_PATH_WIN = os.getcwd() + "\\ssv\\ssv-cli.exe"
+    CLI_PATH_LINUX_MAC = os.getcwd()
+    CLI_PATH_WIN = os.getcwd()
     ssv_share_file = None
     keystore_file = None
     keystore_pass = None
@@ -55,39 +56,39 @@ class SSV:
         self.keystore_file = keystore_file
         self.keystore_pass = keystore_password
 
-    def generate_shares(self, operator_data: List[Operator], network_fees):
+    def get_owner_nonce(self, owner_address="", ssv_contract_address="", eth_node_url=""):
+        cli_path = self.CLI_PATH_LINUX_MAC + "/ssv-scanner" if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN + "\\ssv-keys"
+        os.chdir(cli_path)
+        output = subprocess.run(["yarn", "cli", "nonce", "-n", eth_node_url, "-ca", ssv_contract_address, "-oa", owner_address],
+                                capture_output=True)
+        if output.stderr == None:
+            return int(output.stdout.decode("utf-8").replace("Next nonce: ", ""))
+        else:
+            return 0
+
+    def generate_shares(self, operator_data: List[Operator], network_fees, owner_address, owner_nonce):
         """
         :return:
         """
-        # todo clean
-        print("===================================================================================")
         operator_ids = [str(operator.id) for operator in operator_data]
         operator_pubkeys = [operator.pubkey for operator in operator_data]
         total_ssv_fee = (sum([int(operator.fee) for operator in operator_data]) + network_fees) * 2628000
-        output_folder = os.getcwd() + ("/keyshares" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\keyshares')
-        cli_path = self.CLI_PATH_LINUX_MAC if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN
-        # output2=check_output(["ls","-la"])
-        # print(output2) # todo clean
-        output = check_output(
-            [cli_path, "key-shares", "-ks", self.keystore_file, "-ps", self.keystore_pass, "-oid",
-             ",".join(operator_ids), "-ok", ",".join(operator_pubkeys), "-ssv", str(total_ssv_fee), "-of",
-             output_folder])
-        print(output)# todo logger
-        return output_folder + output.decode("utf-8").partition("keyshares")[2].partition(".json")[0] + ".json"
-
-    def stake_shares(self, share_file_path):
-        """
-        :return:
-        """
-        print(share_file_path)# todo logger
-        with open(share_file_path, "r") as file_path:
-            print(file_path)# todo logger
-            shares = json.load(file_path)
-        file_path.close()
-        return shares["payload"]["readable"]
+        cli_path = self.CLI_PATH_LINUX_MAC + "/ssv-keys" if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN + "\\ssv-keys"
+        os.chdir(cli_path)
+        output_folder = os.getcwd().replace("/ssv-keys","") + (
+            "/keyshares" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\keyshares')
+        output = subprocess.run(["yarn", "cli", "shares", "-ks", self.keystore_file, "-ps", self.keystore_pass, "-oid",
+             ",".join(operator_ids), "-ok", ",".join(operator_pubkeys), "-of",
+             output_folder, "-oa", owner_address, "-on", str(owner_nonce)], capture_output=True)
+        match = re.search(r"Find your key shares file at (.*?)\n", output.stdout.decode("utf-8"))
+        if match:
+            file_path = match.group(1)
+            return file_path, total_ssv_fee
+        else:
+            return None
 
 
-def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee=0):
+def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee=0, owner_address="", eth_node_url="", ssv_contract_address=""):
     path = os.getcwd() + ("/validator_keys/" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\validator_keys\\')
     file_path = path + keystore_file
     ssv = SSV(
@@ -95,9 +96,9 @@ def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee
         keystore_password)
     op = OperatorData("https://api.ssv.network")
     operators = op.get_operator_data(operator_ids)
-    share_file = str(ssv.generate_shares(operators, network_fee))
-    ssv.stake_shares(share_file)
-    return share_file
+    nonce = ssv.get_owner_nonce(owner_address, ssv_contract_address, eth_node_url)
+    share_file, total_ssv_fee = ssv.generate_shares(operators, network_fee, owner_address, nonce)
+    return share_file, total_ssv_fee
 
 
 def get_shares_from_file(shares_file):
@@ -105,4 +106,4 @@ def get_shares_from_file(shares_file):
         print(file_path)
         shares = json.load(file_path)
     file_path.close()
-    return shares['payload']['readable']
+    return shares['payload']

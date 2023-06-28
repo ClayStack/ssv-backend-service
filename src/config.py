@@ -52,7 +52,8 @@ RPC_URLS = {
 CONTRACTS = {
     "goerli": {
         "SSVTokenContract": "0x3a9f01091C446bdE031E39ea8354647AFef091E7",
-        "SSVNetworkContract": "0xb9e155e65B5c4D66df28Da8E9a0957f06F11Bc04",
+        "SSVNetworkContract": "0xAfdb141Dd99b5a101065f40e3D7636262dce65b3",
+        "SSVNetworkViewsContract": "0x8dB45282d7C4559fd093C26f677B3837a5598914",
         "LiquidStakingContract": LIQUID_STAKING_CONTRACT_ADDRESS
     },
 }

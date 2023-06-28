@@ -14,7 +14,7 @@ def submitTransaction(provider, contract, function_name, account, private_key, p
         }
         if 'value' in overrides:
             details['value'] = overrides['value']
-        transaction = contractFunction(*params).buildTransaction(details)
+        transaction = contractFunction(*params).build_transaction(details)
     else:
         transaction = {
             "from": account,

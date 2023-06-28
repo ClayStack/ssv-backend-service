@@ -16,6 +16,7 @@ The SSV Liquid Staking Validator Registration Service is a service that allows o
 Make sure you have python installed with all the dependencies.
 
 ```
+Run setup.sh to install all the dependencies
 Run the test files in the /test folder
 ```
 

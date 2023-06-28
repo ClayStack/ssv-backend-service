@@ -2,6 +2,8 @@
 .idea
 bin
 lib
+ssv-keys
+ssv-scanner
 .Python
 pyvenv.cfg
-/src/.env
+./src/.env
