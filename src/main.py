@@ -63,7 +63,7 @@ async def generate_keys_and_register_ssv(num_validators):
     for i in range(num_validators):
         [credential, keystore_file] = await generate_validator_credentials()
         ssv_network_contract = getContract(NETWORK, 'SSVNetworkContract', Provider(NETWORK))
-        network_fee = await ssv_network_contract.functions.getNetworkFee().call()
+        network_fee = ssv_network_contract.functions.getNetworkFee().call()
 
         # Select the Operator IDs for the validator
         operator_ids_for_validator = random.sample(operator_ids, 4)
