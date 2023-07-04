@@ -4,44 +4,39 @@ import logging
 from web3 import Web3
 
 from src.config import (KEY_STORE_PASSWORD, PRIVATE_KEY,
-                        USER_ADDRESS, OPERATOR_IDS, NETWORK, RPC_URL, CONTRACTS)
+                        USER_ADDRESS, OPERATOR_IDS, NETWORK, RPC_URL, CONTRACTS, VALIDATOR_COUNT_ON_HAND)
 from src.ssv_key_split.split_keys import get_shares_from_file, run_key_split
 from src.transactions import submitTransaction
 from src.utils.ethers import Provider, getBalance, getContract
 from src.validators import generate_validator_credentials
 
 
-# TODO 1. add unit tests for main paths (1 is enough)
-
-async def check_and_register(is_test=False):
+async def check_and_register():
     provider = Provider(NETWORK)
     contract = getContract(NETWORK, 'LiquidStakingContract', provider)
 
-    # todo is this the logic of the contract? what about ETH for claims thought?
-    # todo from te contract rather seems you need to figure out how many extra nodes you want
-    # todo or how many ready, function _selectNextValidator() internal returns (Validator memory validator) {
-    # todo this can be a setting in ENV, e.g. always have one ready, so I may need 2 more + 1 idle
-    # Get the contract balance in wei
-    contract_balance = await getBalance(contract.address, provider)
-
-    # Convert the contract balance from wei to ETH
-    contract_balance_eth = Web3.from_wei(contract_balance, 'ether')
-
-    # Check the active validators pending deposit
-    next_validator_exists = False
+    num_validators_needed = 0
     try:
+        # Get the contract balance in ETH
+        contract_balance = await getBalance(contract.address, provider)
+        contract_balance_eth = Web3.from_wei(contract_balance, 'ether')
+        # Get pending withdrawals in ETH
+        pending_withdrawals = await contract.functions.pendingWithdrawals().call()
+        pending_withdrawals_eth = Web3.from_wei(pending_withdrawals, 'ether')
+        # Calculate the existing registered validators
+        validator_count = await contract.functions.validatorNonce().call()
         deposited_validators = await contract.functions.depositedValidators().call()
-        next_validator = await contract.functions.validators(++deposited_validators).call()
-        next_validator_exists = len(next_validator.pubkey) == 48
+        existing_registered_validators = validator_count - deposited_validators
+        # Calculate the number of validators needed to be registered
+        to_deposit_validator_count = (contract_balance_eth - pending_withdrawals_eth) / 32
+        num_validators_needed = to_deposit_validator_count - existing_registered_validators + VALIDATOR_COUNT_ON_HAND
     except Exception as e:
         logging.log(logging.ERROR, e)
-    # Calculate the number of validators needed to be registered
-    num_validators_needed = contract_balance_eth / 32 + 1
 
-    if (next_validator_exists and num_validators_needed > 0) or is_test:
+    if num_validators_needed > 0:
 
         # Generate credentials for all validators
-        credentials = await generate_keys_and_register_ssv(1 if is_test else num_validators_needed)
+        credentials = await generate_keys_and_register_ssv(num_validators_needed)
 
         # Register validators in liquid staking contract
         for credential in credentials:
@@ -53,7 +48,7 @@ async def check_and_register(is_test=False):
                     USER_ADDRESS,
                     PRIVATE_KEY,
                     [credential.deposit_datum_dict["pubkey"], credential.deposit_datum_dict["withdrawal_credentials"],
-                    credential.deposit_datum_dict["signature"], credential.deposit_datum_dict["deposit_data_root"]])
+                     credential.deposit_datum_dict["signature"], credential.deposit_datum_dict["deposit_data_root"]])
             except Exception as e:
                 logging.log(logging.ERROR, e)
     else:

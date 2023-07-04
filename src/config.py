@@ -41,6 +41,7 @@ OPERATOR_IDS = os.getenv('OPERATOR_IDS', '').split(',')  # Assume there are many
 NETWORK = os.getenv('NETWORK', 'goerli')
 LIQUID_STAKING_CONTRACT_ADDRESS = os.getenv('LIQUID_STAKING_CONTRACT_ADDRESS', '0x22863d2a3b5Ba97675fEF8D0C901F31de5F690Ee')
 RPC_URL = os.getenv('RPC_URL', 'https://rpc.ankr.com/eth_goerli')
+VALIDATOR_COUNT_ON_HAND = int(os.getenv('VALIDATOR_COUNT_ON_HAND', '0'))
 
 # RPC URLs
 RPC_URLS = {

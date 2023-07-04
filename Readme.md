@@ -18,13 +18,14 @@ The service is used by the SSV Liquid Staking Protocol to stake with the validat
 3. The keys are registered with the SSV network contract.
 4. The credentials generated are passed to the Liquid staking contract to register the new validators.
 
-### How to run tests
+### How to run the project without docker
 
 Make sure you have python installed with all the dependencies.
 
 ```
-Run setup.sh to install all the dependencies
-Run the test files in the /test folder
+Run setup.sh to install all the project dependencies
+Install all the py requirements with pip
+Run the main.py
 ```
 
 ### How to run the service
