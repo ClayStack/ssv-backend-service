@@ -44,9 +44,9 @@ SSVTokenContract = {
     ]
 }
 
-SSVNetworkContract = {
+SSVNetworkViewsContract = {
     "abi": [{
-        "inputs": [],
+    "inputs": [],
         "name": "getNetworkFee",
         "outputs": [
             {
@@ -58,6 +58,63 @@ SSVNetworkContract = {
         "stateMutability": "view",
         "type": "function"
     }]
+}
+
+SSVNetworkContract = {
+    "abi": [
+        {
+            "constant": False,
+            "inputs": [
+                {
+                    "name": "publicKey",
+                    "type": "bytes"
+                },
+                {
+                    "name": "operatorIds",
+                    "type": "uint64[]"
+                },
+                {
+                    "name": "sharesData",
+                    "type": "bytes"
+                },
+                {
+                    "name": "amount",
+                    "type": "uint256"
+                },
+                {
+                    "components": [
+                        {
+                            "name": "validatorCount",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "networkFeeIndex",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "index",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "active",
+                            "type": "bool"
+                        },
+                        {
+                            "name": "balance",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "cluster",
+                    "type": "tuple"
+                }
+            ],
+            "name": "registerValidator",
+            "outputs": [],
+            "payable": False,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
 }
 
 LiquidStakingContract = {
@@ -690,4 +747,5 @@ ABI = {
     "SSVNetworkContract": SSVNetworkContract['abi'],
     "SSVTokenContract": SSVTokenContract['abi'],
     "LiquidStakingContract": LiquidStakingContract['abi'],
+    "SSVNetworkViewsContract": SSVNetworkViewsContract['abi'],
 }

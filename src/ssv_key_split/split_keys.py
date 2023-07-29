@@ -1,5 +1,6 @@
 import json
-from subprocess import check_output
+import re
+import subprocess
 import requests
 from collections import namedtuple
 import os
@@ -7,21 +8,12 @@ import platform
 
 from typing import List
 
-# todo clean, if this is not our code add reference where you got it from otherwise clean totally
-# todo a lot of prints, but what is this for, either meaning logs etc
-# output = check_output(["./ssv-cli", "key-shares", "-ks",
-#                        "/home/rohit/Documents/hackathon-bogota/ssv-service/validator_keys/keystore-m_12381_3600_1_0_0-1665236798.json",
-#                        "-ps", "test", "-oid", "1,2,9,42", "-ok",
-#                        "LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBMVg2MUFXY001QUNLaGN5MTlUaEIKby9HMWlhN1ByOVUralJ5aWY5ZjAyRG9sd091V2ZLLzdSVUlhOEhEbHBvQlVERDkwRTVQUGdJSy9sTXB4RytXbwpwQ2N5bTBpWk9UT0JzNDE5bEh3TzA4bXFja1JsZEg5WExmbmY2UThqWFR5Ym1yYzdWNmwyNVprcTl4U0owbHR1CndmTnVTSzNCZnFtNkQxOUY0aTVCbmVaSWhjRVJTYlFLWDFxbWNqYnZFL2cyQko4TzhaZUgrd0RzTHJiNnZXQVIKY3BYWG1uelE3Vlp6ZklHTGVLVU1CTTh6SW0rcXI4RGZ4SEhSeVU1QTE3cFU4cy9MNUp5RXE1RGJjc2Q2dHlnbQp5UE9BYUNzWldVREI3UGhLOHpUWU9WYi9MM1lnSTU4bjFXek5IM0s5cmFreUppTmUxTE9GVVZzQTFDUnhtQ2YzCmlRSURBUUFCCi0tLS0tRU5EIFJTQSBQVUJMSUMgS0VZLS0tLS0K,LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBeUtVWTVEUmZZREljengzcjhVY0UKTlpFMFdIQXFuV2FIRjZYRlUydVdObjVOVE94Zkt4ZmZaLzkyeVE1citQVkJPRmQrcHhILzI2QXJVT3dNL1lBRQpRbDZ0VzBtc1FqdUtIU1Q4aUtvTDRTNUt0aDNoeTBqeFRHR1ZZaWdjWG1vRURjd2YxaG8wdWRxRmlEN3dFWXN1CmZHa2E2U1ZQNnBab1NMaU9HZFRKUWVzVDI5WEVCdDZnblhMaFB1MER2K0xsQUJJQ1pqWEFTZWtpSFVKUHRjYlgKRjZFL0lScGpkWHVNSmUyOXZDcmZudXhWWk93a1ptdzJXdGljYlNDOVJpSFRYWUQ1dnVGakZXRHNZMERHUDhzOAoyc1haVHdsNWl4dEhlUWM2N1lLRFN6YU1MNnY1VUVZblhUTzZzNHFVSWVnTXJwZjd3S0xGVWxqRTMwbnNIaVBUCjBRSURBUUFCCi0tLS0tRU5EIFJTQSBQVUJMSUMgS0VZLS0tLS0K,LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBelc5VGNJMWxXbmUydkNqZzJlb2UKY3o3NnZ4OVU2QWgvTnZRT0dJY1JTbk5mUWc1amxjM0JuTUM4eW1pQTQzVHJDejl6UFVhUVozZG5idW9DZEY3awpoOWZKcVd3SFFrU2pFQ1ZtVytQS2FVWmQ4aW42cGVGbmgrZEowenR1cUx1aUlJMWQvU05xdGJUaFA2VjQ4TGxDCklsVUhXVFRaKzNVY2dBanlwenIxRmxYU2hGV0w0aGcxeXF3K0p1WW1yTnY2cGZaeWdVbTZQaTBVazVXUVZnUk4KR2RrU3BTb2ZYZERGcElWN0xBU3V0a2dGUytqVnpaL3E5bmh1ejVjNlJWaDYvV1hiZVpDbXhnMGU2R2hIVXY0bAp4SGNaSUkraWhzWk5KM3V5b2NiaWlubE5EaTNMK2hySEUxMExNeVRoN2lVSC8yd1k4MjJKMmdDSEZzNWhkVkNrCm53SURBUUFCCi0tLS0tRU5EIFJTQSBQVUJMSUMgS0VZLS0tLS0K,LS0tLS1CRUdJTiBSU0EgUFVCTElDIEtFWS0tLS0tCk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBNVV3SFltUnJoL3hwbWovd1RHcWwKLysvZEdNWFFlSkg0VUptSjNNWXhyMUU0aGF4ZkhLK3NzSkhXYzYvbWlpRTdZMTBxcy9sNzRvNHdGNnJ2SXYrVApTYnQ2UjdONXNKYUZsYnZ3M2ZCampiZElQTnBHQ0JTaXl3aTc3M3lQZy8vOG04OHMxNTNwYjZmVnViU2QxMzJWClpEZkhmMEdPdnA4b0hxcHY5ampsQ0NlV2phNXUzVzhqN2RwWDBsQTYvaTJRaW4yN3VESHViMHd1eWFEcGprNDcKWG1tOHV2d1VFTWw1L0trREg3Z2FXUjNzNkluZjR4TVpKbHEvMGplVkdoUll5bHg3RFE1WnVBNDNCSGNGMWtxMAo3ZHU0ejFUQ2tFN0ZIZlZRMTdFUnpwUHlmS2l5YlQ4UXdnb3VVV2hGUjJqK3ExbHZGbHJQR0U2OWpIWE9MVWM0CnV3SURBUUFCCi0tLS0tRU5EIFJTQSBQVUJMSUMgS0VZLS0tLS0K",
-#                        "-ssv", "1000"])
-# print(str(output).partition("key shares file at ")[2].partition(".json")[0] + ".json")
-
 Operator = namedtuple("Operator", "id pubkey fee name")
 
 
 class OperatorData:
     API_URL = None
-    operator_call = "/api/v1/operators/"
+    operator_call = "/api/v3/prater/operators/"
 
     def __init__(self, api_url):
         """
@@ -47,14 +39,12 @@ class OperatorData:
             operator = Operator(operator_data["id"], operator_data["public_key"], operator_data["fee"],
                                 operator_data["name"])
             operators_data.append(operator)
-        # print("operator_data") # todo clean
-        # print(operator_data) # todo clean
         return operators_data
 
 
 class SSV:
-    CLI_PATH_LINUX_MAC = os.getcwd() + "/ssv/ssv-cli"
-    CLI_PATH_WIN = os.getcwd() + "\\ssv\\ssv-cli.exe"
+    CLI_PATH_LINUX_MAC = os.getcwd()
+    CLI_PATH_WIN = os.getcwd()
     ssv_share_file = None
     keystore_file = None
     keystore_pass = None
@@ -66,54 +56,53 @@ class SSV:
         self.keystore_file = keystore_file
         self.keystore_pass = keystore_password
 
-    def generate_shares(self, operator_data: List[Operator], network_fees):
+    def get_owner_nonce(self, owner_address="", ssv_contract_address="", eth_node_url=""):
+        cli_path = self.CLI_PATH_LINUX_MAC + "/ssv-scanner" if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN + "\\ssv-keys"
+        os.chdir(cli_path)
+        output = subprocess.run(["yarn", "cli", "nonce", "-n", eth_node_url, "-ca", ssv_contract_address, "-oa", owner_address],
+                                capture_output=True)
+        if output.stderr == None:
+            return int(output.stdout.decode("utf-8").replace("Next nonce: ", ""))
+        else:
+            return 0
+
+    def generate_shares(self, operator_data: List[Operator], network_fees, owner_address, owner_nonce):
         """
         :return:
         """
-        # todo clean
-        print("===================================================================================")
         operator_ids = [str(operator.id) for operator in operator_data]
         operator_pubkeys = [operator.pubkey for operator in operator_data]
-        total_ssv_fee = (sum([operator.fee for operator in operator_data]) + network_fees) * 2628000
-        output_folder = os.getcwd() + ("/keyshares" if 'Linux' in platform.system() else '\\keyshares')
-        cli_path = self.CLI_PATH_LINUX_MAC if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN
-        # output2=check_output(["ls","-la"])
-        # print(output2) # todo clean
-        output = check_output(
-            [cli_path, "key-shares", "-ks", self.keystore_file, "-ps", self.keystore_pass, "-oid",
-             ",".join(operator_ids), "-ok", ",".join(operator_pubkeys), "-ssv", str(total_ssv_fee), "-of",
-             output_folder])
-        print(output)# todo logger
-        return output_folder + output.decode("utf-8").partition("keyshares")[2].partition(".json")[0] + ".json"
-
-    def stake_shares(self, share_file_path):
-        """
-        :return:
-        """
-        print(share_file_path)# todo logger
-        with open(share_file_path, "r") as file_path:
-            print(file_path)# todo logger
-            shares = json.load(file_path)
-        file_path.close()
-        return shares["payload"]["readable"]
+        total_ssv_fee = (sum([int(operator.fee) for operator in operator_data]) + network_fees) * 2628000
+        cli_path = self.CLI_PATH_LINUX_MAC + "/ssv-keys" if 'Linux' in platform.system() or 'Darwin' in platform.system() else self.CLI_PATH_WIN + "\\ssv-keys"
+        os.chdir(cli_path)
+        output_folder = os.getcwd().replace("/ssv-keys","") + (
+            "/keyshares" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\keyshares')
+        output = subprocess.run(["yarn", "cli", "shares", "-ks", self.keystore_file, "-ps", self.keystore_pass, "-oid",
+             ",".join(operator_ids), "-ok", ",".join(operator_pubkeys), "-of",
+             output_folder, "-oa", owner_address, "-on", str(owner_nonce)], capture_output=True)
+        match = re.search(r"Find your key shares file at (.*?)\n", output.stdout.decode("utf-8"))
+        if match:
+            file_path = match.group(1)
+            return file_path, total_ssv_fee
+        else:
+            return None
 
 
-def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee=0):
-    path = os.getcwd() + ("/validator_keys/" if 'Linux' in platform.system() else '\\validator_keys\\')
+def run_key_split(keystore_file, keystore_password, operator_ids=[], network_fee=0, owner_address="", eth_node_url="", ssv_contract_address=""):
+    path = os.getcwd() + ("/validator_keys/" if 'Linux' in platform.system() or 'Darwin' in platform.system() else '\\validator_keys\\')
     file_path = path + keystore_file
     ssv = SSV(
         file_path,
         keystore_password)
     op = OperatorData("https://api.ssv.network")
     operators = op.get_operator_data(operator_ids)
-    share_file = str(ssv.generate_shares(operators, network_fee))
-    ssv.stake_shares(share_file)
-    return share_file
+    nonce = ssv.get_owner_nonce(owner_address, ssv_contract_address, eth_node_url)
+    share_file, total_ssv_fee = ssv.generate_shares(operators, network_fee, owner_address, nonce)
+    return share_file, total_ssv_fee
 
 
 def get_shares_from_file(shares_file):
     with open(shares_file, "r") as file_path:
-        print(file_path)
         shares = json.load(file_path)
     file_path.close()
-    return shares['payload']['readable']
+    return shares['payload']

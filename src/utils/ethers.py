@@ -1,8 +1,6 @@
 import time
 
-from eth_account.messages import encode_defunct
 from web3 import Web3
-from web3.auto import w3
 from web3.middleware import geth_poa_middleware
 
 from src.abi import abis
@@ -45,11 +43,9 @@ class Provider:
             geth_poa_middleware, layer=0)  # Inject poa middleware
         self.index = self.index + 1
 
-        if not self.web3.isConnected():
+        if not self.web3.is_connected():
             logger.info(f"RPC: {self.rpc} disconnected, next provider")
             return self.selectNextProvider()
-
-# todo check all pieces are used otherwise remove unsued pieces
 
 def getContract(network, contractName, provider: Provider):
     address = CONTRACTS[network][contractName]
@@ -59,43 +55,7 @@ def getContract(network, contractName, provider: Provider):
 
 
 @force_async
-def getBlock(provider: Provider, block='latest'):
-    b = provider.web3.eth.getBlock(block)
-    logger.info(f'BLOCK {b.number} retrieved')
-    return {
-        "_id": b.number,
-        "timestamp": b.timestamp
-    }
-
-
-@force_async
 def getBalance(address, provider: Provider):
     balance = provider.web3.eth.get_balance(address)
     return balance
 
-
-@force_async
-def getBalanceOf(account, contract):
-    raw_balance = contract.functions.balanceOf(account).call()
-    return raw_balance
-
-
-@force_async
-def getTransaction(txn_hash, provider):
-    try:
-        txn_receipt = provider.web3.eth.get_transaction_receipt(txn_hash)
-        return txn_receipt
-    except Exception as e:
-        return
-
-
-@force_async
-def getNonce(provider: Provider, address):
-    nonce = provider.web3.eth.get_transaction_count(address)
-    return nonce
-
-
-def verify(address, signature, message):
-    message = encode_defunct(text=message)
-    verified = w3.eth.account.recover_message(message, signature=signature)
-    return address == verified
