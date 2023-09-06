@@ -18,7 +18,15 @@ The service is used by the SSV Liquid Staking Protocol to stake with the validat
 3. The keys are registered with the SSV network contract.
 4. The credentials generated are passed to the Liquid staking contract to register the new validators.
 
-### How to run the project without docker
+
+## How exits are handled
+1. The liquid staking contract is checked for pendingWithdrawals and counts the number of validators to be exited.
+2. The validators are exited one by one.
+3. The keys are unregistered from the SSV network contract.
+4. The validator is marked as inactive in the liquid staking contract.
+
+
+## How to run the project without docker
 
 Make sure you have python installed with all the dependencies.
 
@@ -28,6 +36,6 @@ Install all the py requirements with pip
 Run the main.py
 ```
 
-### How to run the service
+## How to run the service
 
 Run the docker file with all the required environment variables.
