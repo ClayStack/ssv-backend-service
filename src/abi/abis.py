@@ -141,6 +141,81 @@ LiquidStakingContract = {
       "type": "constructor"
     },
     {
+      "anonymous": False,
+      "inputs": [
+        {
+          "indexed": True,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": True,
+          "internalType": "address",
+          "name": "spender",
+          "type": "address"
+        },
+        {
+          "indexed": False,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Approval",
+      "type": "event"
+    },
+    {
+      "anonymous": False,
+      "inputs": [
+        {
+          "indexed": False,
+          "internalType": "uint256",
+          "name": "activeValidators",
+          "type": "uint256"
+        },
+        {
+          "indexed": False,
+          "internalType": "uint256",
+          "name": "activeValidatorsBalance",
+          "type": "uint256"
+        },
+        {
+          "indexed": False,
+          "internalType": "uint256",
+          "name": "exitedValidators",
+          "type": "uint256"
+        }
+      ],
+      "name": "OracleReportEvent",
+      "type": "event"
+    },
+    {
+      "anonymous": False,
+      "inputs": [
+        {
+          "indexed": True,
+          "internalType": "address",
+          "name": "from",
+          "type": "address"
+        },
+        {
+          "indexed": True,
+          "internalType": "address",
+          "name": "to",
+          "type": "address"
+        },
+        {
+          "indexed": False,
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "Transfer",
+      "type": "event"
+    },
+    {
       "inputs": [],
       "name": "activeValidators",
       "outputs": [
@@ -312,6 +387,26 @@ LiquidStakingContract = {
     {
       "inputs": [],
       "name": "depositedValidators",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "exitValidator",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "exitValidatorNonce",
       "outputs": [
         {
           "internalType": "uint256",
